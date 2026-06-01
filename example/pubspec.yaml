@@ -1,0 +1,16 @@
+name: kickin_utilities_example
+description: Minimal example app demonstrating kickin_utilities usage
+publish_to: none
+
+environment:
+  sdk: ">=2.18.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  kickin_utilities:
+    path: ..
+  flutter_riverpod: ^2.0.0
+
+flutter:
+  uses-material-design: true
