@@ -1,7 +1,8 @@
 name: kickin_utilities
-description: "A new Flutter package project."
+description: "A modular Flutter utilities package useful utilities such as constants, extensions, helpers, mixins, and state management."
 version: 0.0.1-dev.1
-homepage:
+homepage: https://github.com/okikday/kickin_utilities
+repository: https://github.com/okikday/kickin_utilities
 
 environment:
   sdk: ^3.11.5
