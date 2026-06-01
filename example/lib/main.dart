@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kickin_utilities/kickin_utilities.dart';
 
 final counterProvider = NotifierProvider<KIntNotifier, int>(() => KIntNotifier());

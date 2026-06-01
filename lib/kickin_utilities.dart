@@ -1,3 +1,6 @@
+/// It's recommended to import this library with a prefix to avoid naming conflicts. For example, you might want to do:
+///     import 'package:kickin_utilities/kickin_utilities.dart' as ku;
+///
 library;
 
 /// ===============================================================
@@ -21,6 +24,6 @@ export '../src/helpers/helpers.dart';
 export '../src/mixins/mixins.dart';
 
 /// ===============================================================
-/// STATE MANAGEMENT
+/// STATE MANAGEMENT (Import the specific state management solution you want to use)
 /// ===============================================================
 export '../src/state_mgmt/riverpod/riverpod.dart';
