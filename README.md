@@ -191,53 +191,6 @@ State helpers that wire controllers and provider warm-up behavior.
 
 `KPageControllerMixin` owns and disposes a `PageController`.
 
-### `src/mixins/src/provider_warmup_mixin.dart`
-
-`KProviderWarmupMixin` keeps Riverpod providers alive for a duration and can clear them individually or in bulk.
-
----
-
-## State Management
-
-This folder is reserved for state-management helpers. Each subfolder under `state_mgmt/` is a separate subfeature, so if another state-management approach is added later it can live beside `riverpod/` without changing the documentation structure.
-
-### Riverpod
-
-Riverpod-specific helpers live here.
-
-#### `src/state_mgmt/riverpod/src/absorber.dart`
-
-`KAbsorber.watch()` and `KAbsorber.read()` wrap Riverpod access in lightweight widgets.
-
-Use them when you want to pass both the `WidgetRef` and the provider value into a builder.
-
-```dart
-KAbsorber.watch(myProvider, builder: (ref, value, child) {
-  return Text('$value');
-});
-```
-
-#### `src/state_mgmt/riverpod/src/custom_notifiers.dart`
-
-Custom notifiers for Riverpod apps.
-
-##### Primitive notifiers
-
-- `KIntNotifier`
-- `KDoubleNotifier`
-- `KStringNotifier`
-- `KBoolNotifier`
-- `KSomeNotifier<T>`
-
-##### Async notifiers
-
-- `KWatchNotifier<T>`
-- `KSomeAsyncNotifier<T>`
-
-##### Cached notifier
-
-- `KCachedNotifier<In, Out>` stores state in `kickin_storage` / Hive using the shared `kRiverpodCacheBoxName`.
-
 ---
 
 ## Usage
@@ -298,7 +251,7 @@ Add the package to your app:
 ```yaml
 dependencies:
   kickin_utilities:
-    ^0.0.1-dev.2
+    ^0.0.1-dev.3
 ```
 
 Or install it with the standard command:

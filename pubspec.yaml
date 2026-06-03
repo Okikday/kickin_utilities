@@ -1,6 +1,6 @@
 name: kickin_utilities
 description: "A modular Flutter utilities package useful utilities such as constants, extensions, helpers, mixins, and state management."
-version: 0.0.1-dev.2
+version: 0.0.1-dev.3
 homepage: https://github.com/okikday/kickin_utilities
 repository: https://github.com/okikday/kickin_utilities
 
@@ -11,8 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^3.3.1
-  kickin_storage: ^0.0.1-dev.3
   
 
 dev_dependencies:

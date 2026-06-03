@@ -22,8 +22,3 @@ export '../src/helpers/helpers.dart';
 /// MIXINS
 /// ===============================================================
 export '../src/mixins/mixins.dart';
-
-/// ===============================================================
-/// STATE MANAGEMENT (Import the specific state management solution you want to use)
-/// ===============================================================
-export '../src/state_mgmt/riverpod/riverpod.dart';
