@@ -1,3 +1,6 @@
+## 0.0.1-dev.4
+- Breaking change: adjusted the type of message to error for better runtime operations
+
 ## 0.0.1-dev.3
 - Added the PageAnimation from custom_widgets_toolkit
 - Removed specific state_mgmt modules

@@ -251,7 +251,7 @@ Add the package to your app:
 ```yaml
 dependencies:
   kickin_utilities:
-    ^0.0.1-dev.3
+    ^0.0.1-dev.4
 ```
 
 Or install it with the standard command:

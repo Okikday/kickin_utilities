@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:developer';
 
 sealed class _ResultStatus {
-  final String message;
+  final Object? err;
   final StackTrace? stackTrace;
   static const loading = _Loading();
   static const success = _Success();
 
-  const _ResultStatus(this.message, this.stackTrace);
-  static _Error error(String message, StackTrace? st) => _Error(message, st);
+  const _ResultStatus(this.err, this.stackTrace);
+  static _Error error(Object? err, StackTrace? st) => _Error(err, st);
 }
 
 class _Loading extends _ResultStatus {
@@ -40,20 +40,26 @@ class KResult<T> {
   const KResult.loading() : this._(status: _ResultStatus.loading);
 
   static KResult<T> success<T>(T value, {String? logMsg}) {
-    if (logMsg != null) log("success: $logMsg");
+    if (logMsg != null) log("success: $logMsg", name: "KResult.success");
     return KResult._(status: _ResultStatus.success, data: value);
   }
 
-  static KResult<T> error<T>(String message, [StackTrace? st, bool logError = true]) {
-    if (logError) log("error: $message", error: message, stackTrace: st);
-    return KResult._(status: _ResultStatus.error(message, st));
+  static KResult<T> error<T>(
+    Object? error, [
+    StackTrace? st,
+    bool logError = true,
+  ]) {
+    if (logError) {
+      log("error", error: error, stackTrace: st, name: "KResult.error");
+    }
+    return KResult._(status: _ResultStatus.error(error, st));
   }
 
   bool get isLoading => status == _ResultStatus.loading;
   bool get isSuccess => status == _ResultStatus.success;
   bool get isError => status is _Error;
 
-  String get message => status.message;
+  String get message => status.err.toString();
   StackTrace? get stackTrace => status.stackTrace;
 
   @override
@@ -63,55 +69,86 @@ class KResult<T> {
     _ => 'Result<$T>: Error(message=$message)',
   };
 
-  /// Runs [operation] and wraps the result in a [KResult.success] or [KResult.error] if it throws.
-  static Future<KResult<T?>> tryRunAsync<T>(Future<T?> Function() operation, {bool logError = true}) async {
+  /// Runs [operation] asynchronously and wraps the result in a [KResult.success] or [KResult.error] if it throws.
+  static Future<KResult<T?>> tryRunAsync<T>(
+    Future<T?> Function() operation, {
+    bool logError = true,
+  }) async {
     try {
       return KResult.success(await operation());
     } catch (e, st) {
       if (logError) {
-        log("Result tryRunAsync error: ${e.toString()}", error: e, stackTrace: st);
+        log(
+          "Result tryRunAsync error: ${e.toString()}",
+          error: e,
+          stackTrace: st,
+          name: "KResult.tryRunAsync",
+        );
       }
-      return KResult.error(e.toString(), st, logError);
+      return KResult.error(e, st, logError);
     }
   }
 
-  static KResult<T?> tryRun<T>(T? Function() operation, {bool logError = true}) {
+  /// Runs [operation] synchronously and wraps the result in a [KResult.success] or [KResult.error] if it throws.
+  static KResult<T?> tryRun<T>(
+    T? Function() operation, {
+    bool logError = true,
+  }) {
     try {
       return KResult.success(operation());
     } catch (e, st) {
-      return KResult.error(e.toString(), st, logError);
+      return KResult.error(e, st, logError);
     }
   }
 
-  static FutureOr<KResult<T>> tryRunEither<T>(FutureOr<T?> Function() operation, {bool logError = true}) async {
+  /// Runs [operation] as FutureOr and wraps the result in a [KResult.success] or [KResult.error] if it throws.
+  static FutureOr<KResult<T>> tryRunEither<T>(
+    FutureOr<T?> Function() operation, {
+    bool logError = true,
+  }) async {
     try {
       return KResult.success((await operation()) as T);
     } catch (e, st) {
       if (logError) {
-        log("Result tryRunEither error: ${e.toString()}", error: e, stackTrace: st);
+        log(
+          "Result tryRunEither error: ${e.toString()}",
+          error: e,
+          stackTrace: st,
+          name: "KResult.tryRunEither",
+        );
       }
-      return KResult.error(e.toString(), st, logError);
+      return KResult.error(e, st, logError);
     }
   }
 
   /// Runs [transform] only if this is a success. Otherwise propagates loading/error.
-  KResult<U?> doNext<U>(U? Function(T? data) transform, {bool failSilently = true}) {
+  KResult<U?> doNext<U>(
+    U? Function(T? data) transform, {
+    bool failSilently = true,
+  }) {
     if (!failSilently) {
-      return isSuccess ? KResult.success(transform(data)) : KResult.error(message);
+      return isSuccess
+          ? KResult.success(transform(data))
+          : KResult.error(error);
     }
     return tryRun<U>(() => transform(data));
   }
 
   /// Runs [operation] only if this is a success; otherwise propagates loading/error.
-  Future<KResult<U?>> then<U>(Future<U?> Function(T? data) operation, {bool failSilently = true}) async {
+  Future<KResult<U?>> then<U>(
+    Future<U?> Function(T? data) operation, {
+    bool failSilently = true,
+  }) async {
     if (!failSilently) {
-      return isSuccess ? KResult.success(await operation(data)) : KResult.error(message);
+      return isSuccess
+          ? KResult.success(await operation(data))
+          : KResult.error(error);
     }
     return tryRunAsync(() async => operation(data));
   }
 
-  KResult<T> onError(void Function(String message, [StackTrace? st]) handler) {
-    if (isError) handler(message, stackTrace);
+  KResult<T> onError(void Function(Object? error, [StackTrace? st]) handler) {
+    if (isError) handler(status.err, stackTrace);
     return this;
   }
 }
