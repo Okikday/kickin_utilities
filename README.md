@@ -1,267 +1,295 @@
 # kickin_utilities
 
-Kickin Utilities is a modular Flutter toolkit for common app code: constants, extensions, helpers, mixins, and Riverpod utilities.
+A Flutter package of common utilities: constants, extensions, helpers, and mixins. No dependencies beyond Flutter itself.
 
-It is organized by folder, and each folder represents a feature area. Nested folders are treated as subfeatures, so the docs below follow the source tree.
-
----
-
-## ✨ What's in the box
-
-| Feature | Description |
-|---|---|
-| `constants/` | Shared UI values such as `KSpacing` and `KCurves` |
-| `extensions/` | Flutter and Dart extensions for strings, numbers, colors, context, duration, and Riverpod providers |
-| `helpers/` | Reusable helper types like `KResult`, isolate utilities, and logger starter code |
-| `mixins/` | Stateful mixins for scrolling, paging, and provider warm-up behavior |
-| `state_mgmt/` | State-management helpers organized by subfeature folders such as `riverpod/` |
-
----
-
-## Constants
-
-Shared values for motion and layout.
-
-### `src/constants/src/spacing.dart`
-
-`KSpacing` provides common spacing tokens for Flutter layouts.
-
-```dart
-Container(padding: const EdgeInsets.all(KSpacing.md));
-```
-
-Available sizes: `xxs`, `xs`, `sm`, `md`, `lg`, `xl`, `xxl`, `xxxl`, `huge`, and `massive`.
-
-### `src/constants/src/curves.dart`
-
-`KCurves` provides a set of spring-based and easing curves for consistent motion.
-
-Examples include:
-
-- `instantSpring`
-- `defaultIosSpring`
-- `bouncySpring`
-- `snappySpring`
-- `interactiveSpring`
-- `fastInSlowOut`
-- `linear`, `ease`, `decelerate`, `fastSlowInOut`
-- `bounceOut`, `bounceIn`
-- `easeOutSine`, `easeInOutSine`, `easeOutCirc`, `easeInOutCirc`
-
----
-
-## Extensions
-
-Small convenience extensions for Flutter and Dart APIs.
-
-### `src/extensions/src/extension_on_string.dart`
-
-`String.decodeJson` decodes a JSON string into a `Map` or list-like structure.
-
-```dart
-final data = '{"name":"Ada"}'.decodeJson;
-```
-
-### `src/extensions/src/extension_on_num.dart`
-
-Numeric helpers for durations and widget gaps.
-
-- `inMicroseconds`
-- `inMs`
-- `inMilliseconds`
-- `inSeconds`
-- `inMinutes`
-- `inHours`
-- `inDays`
-- `toHBox`
-- `toVBox`
-- `toHSliverBox`
-- `toVSliverBox`
-
-```dart
-await 500.inMs.delay();
-final gap = 16.toVBox;
-```
-
-### `src/extensions/src/extension_on_color.dart`
-
-`Color.lightenColor()` returns a lighter color using HSL lightness.
-
-### `src/extensions/src/extension_on_context.dart`
-
-`BuildContext` helpers for theme, media query, and layout values.
-
-- `theme`
-- `scaffoldBackgroundColor`
-- `platformBrightness`
-- `isDarkMode`
-- `mediaQuery`
-- `screenSize`
-- `deviceWidth`
-- `deviceHeight`
-- `viewInsets`
-- `padding`
-- `topPadding`
-- `bottomPadding`
-
-### `src/extensions/src/extension_on_duration.dart`
-
-`Duration.delay()` is a small wrapper over `Future.delayed`.
-
-### `src/extensions/src/extension_on_providers.dart`
-
-Riverpod provider shortcuts for `ProviderListenable`, `AsyncProviderListenable`, `Ref`, `WidgetRef`, `NotifierProvider`, and `AsyncNotifierProvider`.
-
-- `read` / `watch` / `readX` / `watchX`
-- `emptyListenMany`
-- `keepAliveFor`
-- `not`, `notX`, `watchNot`, `watchNotX`
-- `expand`, `expandX`
-
----
-
-## Helpers
-
-Utility types for results and isolate execution.
-
-### `src/helpers/src/result.dart`
-
-`KResult<T>` wraps loading, success, and error states.
-
-Use it when you want to avoid repeating `try/catch` blocks around asynchronous work.
-
-```dart
-final result = await KResult.tryRunAsync(() async => fetchUser());
-if (result.isSuccess) {
-  print(result.value);
-}
-```
-
-Key helpers:
-
-- `KResult.loading()`
-- `KResult.success()`
-- `KResult.error()`
-- `tryRunAsync()`
-- `tryRun()`
-- `tryRunEither()`
-- `doNext()`
-- `then()`
-- `onError()`
-
-### `src/helpers/src/isolate.dart`
-
-Isolate utilities for one-shot work and persistent workers.
-
-#### `KIsolate<TArg, TProgress, TResult>`
-
-Runs a single task in a dedicated isolate and supports progress callbacks.
-
-#### `KIsolateContinuous<TArg, TResult>`
-
-Runs sequential tasks inside one long-lived isolate with priority queueing and backpressure.
-
-#### `KIsolateAccess` mixin
-
-Convenience mixin that exposes `isolateRun()` and `isolateSpawn()`.
-
-#### `KIsolateException`
-
-Exception type thrown when isolate spawn or execution fails.
-
-### `src/helpers/src/logger.dart`
-
-This file currently contains commented-out logger starter code. It is part of the source tree, but it does not currently contribute active exported behavior.
-
----
-
-## Mixins
-
-State helpers that wire controllers and provider warm-up behavior.
-
-### `src/mixins/src/is_scrolled_notifier_mixin.dart`
-
-`KIsScrolledNotifierMixin` gives a `ScrollController` and a `ValueNotifier<bool>` that flips when the scroll offset passes the toolbar-height threshold.
-
-### `src/mixins/src/scroll_offset_notifier_mixin.dart`
-
-`KScrollOffsetNotifierMixin` exposes the current scroll offset in a `ValueNotifier<double>`.
-
-### `src/mixins/src/page_controller_mixin.dart`
-
-`KPageControllerMixin` owns and disposes a `PageController`.
-
----
-
-## Usage
-
-Import the package from one place:
-
-```dart
-import 'package:kickin_utilities/kickin_utilities.dart';
-```
-
-Minimal example:
-
-```dart
-final Map profile = '{"name":"Alice"}'.decodeJson;
-final wait = 500.inMs;
-
-final result = await KResult.tryRunAsync(() async => profile['name']);
-
-class Example extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return KAbsorber.watch(counterProvider, builder: (r, count, _) {
-      return Text('Count: $count');
-    });
-  }
-}
-```
-
----
-
-## Tests & Example App
-
-The repository includes:
-
-- `test/kickin_utilities_test.dart` for core package validation
-- `example/` for a minimal Flutter app that uses `KSpacing` and Riverpod notifiers
-
-Run tests:
-
-```bash
-flutter test
-```
-
-Run the example app:
-
-```bash
-cd example
-flutter pub get
-flutter run
-```
+Part of the **Kickin** toolkit for Flutter.
 
 ---
 
 ## Installation
 
-Add the package to your app:
+```sh
+flutter pub add kickin_utilities
+```
+
+Or add it manually to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  kickin_utilities:
-    ^0.0.1-dev.4
+  kickin_utilities: ^0.0.1
 ```
 
-Or install it with the standard command:
+Then import it:
 
-```bash
-flutter pub add kickin_utilities
+```dart
+import 'package:kickin_utilities/kickin_utilities.dart';
 ```
 
 ---
 
-## License
+## What's included
 
-See the repository `LICENSE` file.
+| Feature | What it gives you |
+|---|---|
+| **Constants** | Spacing tokens (`KSpacing`) and motion curves (`KCurves`) |
+| **Extensions** | Shortcuts on `String`, `num`, `Color`, `BuildContext`, `Duration`, and Riverpod providers |
+| **Helpers** | `KResult` for safe async operations, `KIsolate` for background tasks |
+| **Mixins** | Scroll offset tracking, scroll threshold detection, and page controller ownership |
+
+---
+
+## Constants
+
+### `KSpacing`
+
+Named spacing tokens for consistent layout padding and gaps.
+
+```dart
+Container(padding: const EdgeInsets.all(KSpacing.md));
+```
+
+Available sizes: `xxs`, `xs`, `sm`, `md`, `lg`, `xl`, `xxl`, `xxxl`, `huge`, `massive`
+
+### `KCurves`
+
+Pre-defined animation curves for consistent motion across your app.
+
+```dart
+// Spring curves
+KCurves.instantSpring
+KCurves.defaultIosSpring
+KCurves.bouncySpring
+KCurves.snappySpring
+KCurves.interactiveSpring
+
+// Easing curves
+KCurves.fastInSlowOut
+KCurves.easeOutSine
+KCurves.easeOutCirc
+KCurves.bounceOut
+```
+
+---
+
+## Extensions
+
+### On `num`
+
+Duration helpers and spacing widgets:
+
+```dart
+await 500.inMs.delay();   // wait 500 ms
+await 2.inSeconds.delay();
+
+16.toVBox    // SizedBox(height: 16)
+16.toHBox    // SizedBox(width: 16)
+16.toVSliverBox  // sliver version
+16.toHSliverBox  // sliver version
+```
+
+### On `BuildContext`
+
+Theme and layout shortcuts — no more deep `MediaQuery.of(context)` chains:
+
+```dart
+context.isDarkMode
+context.theme
+context.scaffoldBackgroundColor
+context.screenSize
+context.deviceWidth
+context.deviceHeight
+context.topPadding
+context.bottomPadding
+context.viewInsets
+```
+
+### On `String`
+
+```dart
+final data = '{"name":"Alice"}'.decodeJson; // Map or list
+```
+
+### On `Color`
+
+```dart
+final lighter = myColor.lightenColor(); // HSL-based lightening
+```
+
+### On `Duration`
+
+```dart
+await 1.inSeconds.delay(); // Future.delayed shorthand
+```
+
+### On Riverpod providers
+
+Shortcuts on `ProviderListenable`, `Ref`, `WidgetRef`, and notifier providers:
+
+```dart
+// Read or watch a provider
+userProvider.read(ref)
+userProvider.watch(ref)
+
+// Boolean inversion
+userProvider.not(ref)       // reads the negation
+userProvider.watchNot(ref)  // watches the negation
+
+// Keep alive for a duration then auto-dispose
+ref.keepAliveFor(const Duration(minutes: 5));
+```
+
+---
+
+## Helpers
+
+### `KResult<T>` — safe async operations
+
+A wrapper for loading, success, and error states. Use it instead of repeating `try/catch` everywhere.
+
+```dart
+final result = await KResult.tryRunAsync(() async => fetchUser(id));
+
+if (result.isSuccess) {
+  print(result.value);
+} else {
+  print(result.message); // readable error
+}
+```
+
+**Constructors:**
+
+| Method | Description |
+|---|---|
+| `KResult.loading()` | Represents an in-progress state |
+| `KResult.success(value)` | Wraps a successful result |
+| `KResult.error(message)` | Wraps an error with a message |
+| `KResult.tryRunAsync(fn)` | Runs async work, captures errors automatically |
+| `KResult.tryRun(fn)` | Same but synchronous |
+
+**Chaining:**
+
+```dart
+final result = await KResult.tryRunAsync(() => fetchUser(id))
+    .then((r) => r.doNext(() => fetchPosts(r.value!.id)))
+    .onError((r) => print('Failed: ${r.message}'));
+```
+
+---
+
+### `KIsolate` — background tasks
+
+Run CPU-heavy work off the main thread without managing isolates manually.
+
+#### `KIsolate` — one-shot task
+
+```dart
+final result = await KIsolate.run(
+  arg: largeDataSet,
+  task: (data) => processList(data),
+);
+```
+
+#### `KIsolateContinuous` — persistent worker
+
+Runs sequential tasks in a single long-lived isolate. Good for queued background work like file processing.
+
+```dart
+final worker = KIsolateContinuous<String, String>();
+await worker.spawn(task: (input) => compressString(input));
+final output = await worker.run(arg: 'some large text');
+```
+
+#### `KIsolateAccess` mixin
+
+Add isolate helpers directly to a class:
+
+```dart
+class MyService with KIsolateAccess {
+  Future<String> process(String input) => isolateRun(arg: input, task: heavyFn);
+}
+```
+
+---
+
+## Mixins
+
+Drop-in state helpers for common widget patterns.
+
+### `KScrollOffsetNotifierMixin`
+
+Exposes the current scroll offset as a `ValueNotifier<double>`. Automatically updates as the user scrolls.
+
+```dart
+class _MyState extends State<MyWidget> with KScrollOffsetNotifierMixin {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: scrollOffset,
+      builder: (_, offset, __) => Text('Offset: $offset'),
+    );
+  }
+}
+```
+
+### `KIsScrolledNotifierMixin`
+
+Flips a `ValueNotifier<bool>` when scroll passes the toolbar-height threshold. Useful for showing/hiding app bar shadows or sticky headers.
+
+### `KPageControllerMixin`
+
+Owns and disposes a `PageController` for you — no boilerplate `initState`/`dispose` needed.
+
+---
+
+## Full example
+
+```dart
+import 'package:kickin_utilities/kickin_utilities.dart';
+
+Future<void> main() async {
+  // Safe async operation
+  final result = await KResult.tryRunAsync(() async {
+    await 1.inSeconds.delay();
+    return '{"name":"Alice"}'.decodeJson;
+  });
+
+  if (result.isSuccess) {
+    print(result.value); // {name: Alice}
+  } else {
+    print(result.message);
+  }
+}
+
+// Spacing in widgets
+Widget spacedColumn() => Column(
+  children: [
+    const Text('Hello'),
+    16.toVBox,
+    const Text('World'),
+  ],
+);
+
+// Context shortcuts
+Widget header(BuildContext context) => Container(
+  width: context.deviceWidth,
+  padding: EdgeInsets.only(top: context.topPadding),
+  color: context.isDarkMode ? Colors.black : Colors.white,
+);
+```
+
+---
+
+## API reference summary
+
+| Class / Extension | Purpose |
+|---|---|
+| `KSpacing` | Named spacing constants |
+| `KCurves` | Named animation curves |
+| `KResult<T>` | Safe async result wrapper |
+| `KIsolate` | One-shot background isolate task |
+| `KIsolateContinuous` | Persistent background worker isolate |
+| `KIsolateAccess` | Mixin for easy isolate access in any class |
+| `KIsolateException` | Exception thrown when isolate work fails |
+| `KScrollOffsetNotifierMixin` | Tracks scroll offset in a `ValueNotifier` |
+| `KIsScrolledNotifierMixin` | Detects when scroll passes a threshold |
+| `KPageControllerMixin` | Owns and disposes a `PageController` |
