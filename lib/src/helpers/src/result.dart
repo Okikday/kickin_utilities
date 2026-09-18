@@ -152,3 +152,24 @@ class KResult<T> {
     return this;
   }
 }
+
+extension KResultExtensionOnFuture<T> on Future<T> {
+  /// Returns the data if this is a success; otherwise returns [fallback].
+  Future<KResult<T>> tryRunAsync({bool log = true}) async {
+    try {
+      return KResult.success(await this);
+    } catch (e, st) {
+      return KResult.error(e.toString(), st, log);
+    }
+  }
+}
+
+extension KResultExtensions<T> on T Function() {
+  KResult<T> tryRun({bool log = true}) {
+    try {
+      return KResult.success(this());
+    } catch (e, st) {
+      return KResult.error(e.toString(), st, log);
+    }
+  }
+}
