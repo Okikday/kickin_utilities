@@ -16,7 +16,7 @@ Or add it manually to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  kickin_utilities: ^0.0.1+1
+  kickin_utilities: ^0.0.2
 ```
 
 Then import it:
