@@ -68,14 +68,21 @@ class KIsolate<TArg, TProgress, TResult> {
     Future<TResult> Function(TArg arg, void Function(TProgress) emit) task,
     TArg arg, {
     void Function(TProgress)? onProgress,
-  }) => KIsolate<TArg, TProgress, TResult>._()._execute(task, arg, onProgress: onProgress);
+  }) => KIsolate<TArg, TProgress, TResult>._()._execute(
+    task,
+    arg,
+    onProgress: onProgress,
+  );
 
   Future<TResult> _execute(
     Future<TResult> Function(TArg, void Function(TProgress)) task,
     TArg arg, {
     void Function(TProgress)? onProgress,
   }) async {
-    assert(!_started, 'SmartIsolate instances are single-use; use SmartIsolate.run().');
+    assert(
+      !_started,
+      'SmartIsolate instances are single-use; use SmartIsolate.run().',
+    );
     _started = true;
 
     final port = ReceivePort();
@@ -96,7 +103,10 @@ class KIsolate<TArg, TProgress, TResult> {
         if (!result.isCompleted) result.complete(msg.value);
       } else if (msg is _Failure) {
         if (!result.isCompleted) {
-          result.completeError(KIsolateException(msg.error.toString(), msg.stack), msg.stack);
+          result.completeError(
+            KIsolateException(msg.error.toString(), msg.stack),
+            msg.stack,
+          );
         }
       }
     });
@@ -104,7 +114,11 @@ class KIsolate<TArg, TProgress, TResult> {
     try {
       _isolate = await Isolate.spawn(
         _entry<TArg, TProgress, TResult>,
-        _OneShotPayload<TArg, TProgress, TResult>(arg: arg, task: task, port: port.sendPort),
+        _OneShotPayload<TArg, TProgress, TResult>(
+          arg: arg,
+          task: task,
+          port: port.sendPort,
+        ),
       );
     } catch (e, st) {
       _cleanup();
@@ -137,9 +151,14 @@ class KIsolate<TArg, TProgress, TResult> {
     _port = null;
   }
 
-  static void _entry<TArg, TProgress, TResult>(_OneShotPayload<TArg, TProgress, TResult> p) async {
+  static void _entry<TArg, TProgress, TResult>(
+    _OneShotPayload<TArg, TProgress, TResult> p,
+  ) async {
     try {
-      final value = await p.task(p.arg, (TProgress v) => p.port.send(_Progress<TProgress>(v)));
+      final value = await p.task(
+        p.arg,
+        (TProgress v) => p.port.send(_Progress<TProgress>(v)),
+      );
       p.port.send(_Result<TResult>(value));
     } catch (e, st) {
       p.port.send(_Failure(e, st));
@@ -171,7 +190,10 @@ class KIsolate<TArg, TProgress, TResult> {
 ///
 /// See [KIsolateAccess] for convenient mixin-based access.
 class KIsolateContinuous<TArg, TResult> {
-  KIsolateContinuous._({required this.maxQueueSize, required this.agingThreshold});
+  KIsolateContinuous._({
+    required this.maxQueueSize,
+    required this.agingThreshold,
+  });
 
   /// Spawns and initialises a persistent isolate worker.
   ///
@@ -183,13 +205,19 @@ class KIsolateContinuous<TArg, TResult> {
   /// before [rootIsolateToken] has been applied — the entry point applies the
   /// token as the very first step before invoking [initialize].
   static Future<KIsolateContinuous<TArg, TResult>> spawn<TArg, TResult>(
-    Future<void> Function(void Function(void Function(TArg arg, void Function(TResult) respond)) registerHandler)
+    Future<void> Function(
+      void Function(void Function(TArg arg, void Function(TResult) respond))
+      registerHandler,
+    )
     initialize, {
     RootIsolateToken? rootIsolateToken,
     int maxQueueSize = kDefaultMaxQueueSize,
     int agingThreshold = 10,
   }) async {
-    final inst = KIsolateContinuous<TArg, TResult>._(maxQueueSize: maxQueueSize, agingThreshold: agingThreshold);
+    final inst = KIsolateContinuous<TArg, TResult>._(
+      maxQueueSize: maxQueueSize,
+      agingThreshold: agingThreshold,
+    );
     await inst._init(initialize, rootIsolateToken: rootIsolateToken);
     return inst;
   }
@@ -205,7 +233,7 @@ class KIsolateContinuous<TArg, TResult> {
 
   final Map<int, Completer<TResult>> _pending = {};
   int _nextId = 0;
-  static const int _maxId = 0x7FFFFFFFFFFFFFFF;
+  static const int _maxId = 0x1FFFFFFFFFFFFF;
 
   final Queue<_Queued<TArg>> _high = Queue();
   final Queue<_Queued<TArg>> _med = Queue();
@@ -220,7 +248,11 @@ class KIsolateContinuous<TArg, TResult> {
   int get pendingCount => _high.length + _med.length + _low.length;
 
   Future<void> _init(
-    Future<void> Function(void Function(void Function(TArg, void Function(TResult))) registerHandler) initialize, {
+    Future<void> Function(
+      void Function(void Function(TArg, void Function(TResult)))
+      registerHandler,
+    )
+    initialize, {
     RootIsolateToken? rootIsolateToken,
   }) async {
     final port = ReceivePort();
@@ -237,7 +269,10 @@ class KIsolateContinuous<TArg, TResult> {
         _next();
       } else if (msg is _ContFailure) {
         final c = _pending.remove(msg.taskId);
-        c?.completeError(KIsolateException(msg.error.toString(), msg.stack), msg.stack);
+        c?.completeError(
+          KIsolateException(msg.error.toString(), msg.stack),
+          msg.stack,
+        );
         _dispatching = false;
         _next();
       }
@@ -264,10 +299,15 @@ class KIsolateContinuous<TArg, TResult> {
   ///
   /// Throws [KIsolateException] if the isolate is not running or the
   /// queue is full.
-  Future<TResult> execute(TArg arg, {KWorkPriority priority = KWorkPriority.medium}) {
+  Future<TResult> execute(
+    TArg arg, {
+    KWorkPriority priority = KWorkPriority.medium,
+  }) {
     if (!_running) throw const KIsolateException('Isolate is not running.');
     if (pendingCount >= maxQueueSize) {
-      throw KIsolateException('Task queue is full ($maxQueueSize). Apply backpressure or raise maxQueueSize.');
+      throw KIsolateException(
+        'Task queue is full ($maxQueueSize). Apply backpressure or raise maxQueueSize.',
+      );
     }
 
     final id = _nextId;
@@ -334,14 +374,17 @@ class KIsolateContinuous<TArg, TResult> {
     _low.clear();
 
     for (final c in _pending.values) {
-      if (!c.isCompleted) c.completeError(const KIsolateException('Isolate disposed.'));
+      if (!c.isCompleted)
+        c.completeError(const KIsolateException('Isolate disposed.'));
     }
     _pending.clear();
     _dispatching = false;
     _nonLowSincePromotion = 0;
   }
 
-  static void _workerEntry<TArg, TResult>(_ContinuousPayload<TArg, TResult> p) async {
+  static void _workerEntry<TArg, TResult>(
+    _ContinuousPayload<TArg, TResult> p,
+  ) async {
     if (p.rootIsolateToken != null) {
       BackgroundIsolateBinaryMessenger.ensureInitialized(p.rootIsolateToken!);
     }
@@ -353,7 +396,8 @@ class KIsolateContinuous<TArg, TResult> {
 
     try {
       await p.initialize((h) => handler = h);
-      if (handler == null) throw StateError('registerHandler() was never called.');
+      if (handler == null)
+        throw StateError('registerHandler() was never called.');
     } catch (e, st) {
       p.mainPort.send(_ContFailure(-1, e, st));
       return;
@@ -366,7 +410,9 @@ class KIsolateContinuous<TArg, TResult> {
           handler!(msg.arg, (v) {
             if (!result.isCompleted) result.complete(v);
           });
-          p.mainPort.send(_ContResult<TResult>(msg.taskId, await result.future));
+          p.mainPort.send(
+            _ContResult<TResult>(msg.taskId, await result.future),
+          );
         } catch (e, st) {
           p.mainPort.send(_ContFailure(msg.taskId, e, st));
         }
@@ -419,11 +465,16 @@ mixin KIsolateAccess {
     Future<TResult> Function(TArg arg, void Function(TProgress) emit) task,
     TArg arg, {
     void Function(TProgress)? onProgress,
-  }) => KIsolate.run<TArg, TProgress, TResult>(task, arg, onProgress: onProgress);
+  }) =>
+      KIsolate.run<TArg, TProgress, TResult>(task, arg, onProgress: onProgress);
 
   /// Spawns a persistent isolate worker. Equivalent to [KIsolateContinuous.spawn].
   Future<KIsolateContinuous<TArg, TResult>> isolateSpawn<TArg, TResult>(
-    Future<void> Function(void Function(void Function(TArg, void Function(TResult))) registerHandler) initialize, {
+    Future<void> Function(
+      void Function(void Function(TArg, void Function(TResult)))
+      registerHandler,
+    )
+    initialize, {
     RootIsolateToken? rootIsolateToken,
     int maxQueueSize = kDefaultMaxQueueSize,
     int agingThreshold = 10,
@@ -454,7 +505,11 @@ class _OneShotPayload<TArg, TProgress, TResult> {
   final TArg arg;
   final Future<TResult> Function(TArg, void Function(TProgress)) task;
   final SendPort port;
-  const _OneShotPayload({required this.arg, required this.task, required this.port});
+  const _OneShotPayload({
+    required this.arg,
+    required this.task,
+    required this.port,
+  });
 }
 
 class _Progress<T> {
@@ -475,9 +530,16 @@ class _Failure {
 
 class _ContinuousPayload<TArg, TResult> {
   final SendPort mainPort;
-  final Future<void> Function(void Function(void Function(TArg, void Function(TResult))) registerHandler) initialize;
+  final Future<void> Function(
+    void Function(void Function(TArg, void Function(TResult))) registerHandler,
+  )
+  initialize;
   final RootIsolateToken? rootIsolateToken;
-  const _ContinuousPayload({required this.mainPort, required this.initialize, this.rootIsolateToken});
+  const _ContinuousPayload({
+    required this.mainPort,
+    required this.initialize,
+    this.rootIsolateToken,
+  });
 }
 
 class _Queued<TArg> {
